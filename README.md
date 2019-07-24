@@ -44,7 +44,7 @@ Genes for plotting in heat maps were selected as follows:
 
 GO term enrichment of regulated genes (padj<0.05) carried out in InnateDB v5.4 (hypergeometric method with BH correction).
 
-Genes associated with the GO terms GO:0051607/GO:0009615 (defense response to virus/response to virus), GO:0070062 (extracellular vesicular exosome) and GO:0045087 (innate immune response) were parsed from the file as follows (eg):
+Genes associated with the GO terms GO:0051607/GO:0009615 (defense response to virus/response to virus), GO:0070062 (extracellular vesicular exosome) and GO:0045087 (innate immune response) were parsed from the InnateDB output file as follows (eg):
 
 ```
 cut -f 2,9 InnateDB_goanalysis_0_15_005.txt | egrep "^GO:0051607|^GO:0009615" | cut -f 2 | tr -d '[:space:]' | tr ";" "\n" | sort | uniq > virus.txt 
