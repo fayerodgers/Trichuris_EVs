@@ -9,6 +9,8 @@ R version 3.5.0
 
 Mouse cDNA FASTA file, Ensembl release 97: ftp://ftp.ensembl.org/pub/release-97/fasta/mus_musculus/cdna/Mus_musculus.GRCm38.cdna.all.fa.gz
 
+Mouse gene to transcript mapping, retrieved from Ensembl release 97 BioMart (GRCm38.p6): transcripts2genes.E97.tsv
+
 
 ## Workflow
 
