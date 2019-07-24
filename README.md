@@ -28,7 +28,7 @@ tail -n +2 experiment_design.tsv | cut -f 2 | while read id ; do mkdir ${id} ; b
 
 Make a table of reads and Kallisto counts (pseudoaligned reads) - useful for plotting later:
 
-tail -n +2 experiment_design.tsv | cut -f 2 | while read id ; do reads=$(zcat ${id}_1.fastq.gz |  awk '{r++}END{print r/4}' )  ; counts=$(awk '{c+=$4}END{print c}' ${id}/abundance.tsv) ;echo ${id}$'\t'${reads}$'\t'${counts} >> counts_table.tsv ; fi; done
+tail -n +2 experiment_design.tsv | cut -f 2 | while read id ; do reads=$(zcat ${id}_1.fastq.gz |  awk '{r++}END{print r/4}' )  ; counts=$(awk '{c+=$4}END{print c}' ${id}/abundance.tsv) ;echo ${id}$'\t'${reads}$'\t'${counts} >> counts_table.tsv ; done
 
 R script for differential expression, and generating plots:
 
