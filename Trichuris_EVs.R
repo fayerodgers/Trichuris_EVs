@@ -11,9 +11,11 @@ library("plyr")
 library("gridExtra")
 library("EnhancedVolcano")
 
-ensembl = useMart("ensembl",dataset="mmusculus_gene_ensembl")
+#paths to data directories
+dir <- '~/git_repos/Trichuris_EVs'
+tx2gene <- read.table('~/git_repos/Trichuris_EVs/transcripts2genes.E97.tsv', header = T)
 
-dir <- '/Users/fr7/Documents/Trichuris_projects/EV/final_analysis'
+ensembl = useMart("ensembl",dataset="mmusculus_gene_ensembl")
 experiment_design <- read.table(paste0(dir,'/experiment_design.tsv'),header=TRUE)
 experiment_design <- experiment_design[which(experiment_design$condition != 'Hpoly_ev'),]
 files<-file.path(dir, experiment_design$file,'abundance.h5')
@@ -36,7 +38,6 @@ dev.off()
 
 
 #import the dataset
-tx2gene <- read.table('/Users/fr7/Documents/Trichuris_projects/transcripts2genes.E97.tsv', header = T)
 txi <- tximport(files, type = "kallisto",tx2gene = tx2gene)
 dds <- DESeqDataSetFromTximport (txi,colData=experiment_design,design =~ condition)
 
@@ -120,7 +121,8 @@ make_graph<-function(x){
 
 #make heatmaps of interesting genes
 viral_genes<-scan(file = paste0(dir,'/virus.txt'), sep = "\n", what = character())
-viral_ids<-res_sig[res_sig$external_gene_name %in% viral_genes, c("ensembl_gene_id","external_gene_name" )]
+viral_ids<-res_sig[res_sig$external_gene_name %in% viral_genes, c("ensembl_gene_id","external_gene_name","log2FoldChange" )]
+viral_ids<-viral_ids[which(viral_ids$log2FoldChange > )]
 values<-as.data.frame(assay(vsd)[viral_ids$ensembl_gene_id,])
 row.names(values)<-viral_ids$external_gene_name
 names(values)<-c("PBS1","PBS2","PBS3","TmEV1","TmEV2","TmEV3")
@@ -133,7 +135,7 @@ pheatmap(mean_values,cluster_cols=F,col=colors,treeheight_row = 0, treeheight_co
 dev.off()
 
 other_immune<-scan(file = paste0(dir,'/innate_immune_not_viral.txt'), sep = "\n", what = character())
-other_immune_ids<-res_sig[res_sig$external_gene_name %in% other_immune, c("ensembl_gene_id","external_gene_name" )]
+other_immune_ids<-res_sig[res_sig$external_gene_name %in% other_immune, c("ensembl_gene_id","external_gene_name","log2FoldChange" )]
 values<-as.data.frame(assay(vsd)[other_immune_ids$ensembl_gene_id,])
 row.names(values)<-other_immune_ids$external_gene_name
 names(values)<-c("PBS1","PBS2","PBS3","TmEV1","TmEV2","TmEV3")
@@ -144,7 +146,7 @@ dev.off()
 
 
 exosomes<-scan(file = paste0(dir,'/exosome.txt'), sep = "\n", what = character())
-exosome_ids<-res_sig[res_sig$external_gene_name %in% exosomes, c("ensembl_gene_id","external_gene_name" )]
+exosome_ids<-res_sig[res_sig$external_gene_name %in% exosomes, c("ensembl_gene_id","external_gene_name","log2FoldChange" )]
 values<-as.data.frame(assay(vsd)[exosome_ids$ensembl_gene_id,])
 row.names(values)<-exosome_ids$external_gene_name
 names(values)<-c("PBS1","PBS2","PBS3","TmEV1","TmEV2","TmEV3")
@@ -152,18 +154,6 @@ mean_values<-data.frame(PBS = rowMeans(values[,c("PBS1", "PBS2", "PBS3")]), TmEV
 pdf(paste0(dir,'/exosomes_heat_map.pdf'))
 pheatmap(mean_values,cluster_cols=F,col=colors,treeheight_row = 0, treeheight_col = 0,cellwidth = 20, cellheight = 15)
 dev.off()
-
-
-
-#plots<-apply(my_data,1,make_graph)
-#grid.arrange(grobs = plots)
-
-#other_immune_genes<-c('Blnk','Casp8','Cdkn1a','Coro2a','Cryab','Hspa1b','Jak2','Lgals9','Ms4a8a','Ppp1c','Srxn1','Tax1bp1','Tet2','Trim12c','Trim14','Trim21','Anapc5','Calm3',
-                  'Capza2','Cfb','Erbb2','Fos','Pla2g6','Ppp2r5c','Ptk2','Tubb2a','Ubr4')
-#my_data<-res_trichuris_sig[res_trichuris_sig$external_gene_name %in% other_immune_genes, c("ensembl_transcript_id_version","external_gene_name" )]
-#plots<-apply(my_data,1,make_graph)
-#grid.arrange(grobs = plots)
-
 
 
 #nice volcano plot
