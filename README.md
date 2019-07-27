@@ -38,7 +38,7 @@ Make a table of reads and Kallisto counts (pseudoaligned reads) - useful for plo
 tail -n +2 experiment_design.tsv | cut -f 2 | while read id ; do reads=$(zcat ${id}_1.fastq.gz |  awk '{r++}END{print r/4}' )  ; counts=$(awk '{c+=$4}END{print c}' ${id}/abundance.tsv) ;echo ${id}$'\t'${reads}$'\t'${counts} >> counts_table.tsv ; done
 ```
 
-The R script for differential expression, and generating plots is Trichuris_EVs.R
+The R script for differential expression, and generating plots is ```Trichuris_EVs.R```
 
 Genes for plotting in heat maps were selected as follows:
 
@@ -52,4 +52,17 @@ cut -f 2,9 InnateDB_goanalysis_0_15_005.txt | egrep "^GO:0051607|^GO:0009615" | 
 
 ### Motif enrichment in 3' UTRs of differentially expressed genes
 
+Fetch all mouse 3' UTR sequences from Ensembl (using the Perl API) with ```fetch_longest_utrs.pl``` (for each gene, retrieves the 3' UTR sequence of all transcripts and returns the longest).
+
+Filter the file for UTRs of genes that are expressed in our conditions:
+
+```
+awk '$2>0{print $1}' deseq2_results.tsv | sed -e 's/"//g' | while read id; do grep -A1 $id longest_utrs.fa >> expressed_utrs.fa ; done
+```
+
+Sort the file from shortest UTR to longest:
+
+```
+head expressed_utrs.fa | sed -e '$!N;s/\n/\t/' | while read line ; do echo $(echo $line | cut -f 2 | wc -c)$'\t'$line; done | sort -nk1,1 | cut -f 2,3 | tr '[:space:]' '\n'
+```
 
