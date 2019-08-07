@@ -63,6 +63,6 @@ awk '$2>0{print $1}' deseq2_results.tsv | sed -e 's/"//g' | while read id; do gr
 Sort the file from shortest UTR to longest:
 
 ```
-head expressed_utrs.fa | sed -e '$!N;s/\n/\t/' | while read line ; do echo $(echo $line | cut -f 2 | wc -c)$'\t'$line; done | sort -nk1,1 | cut -f 2,3 | tr '[:space:]' '\n'
+cat expressed_utrs.fa | sed -e '$!N;s/\n/\t/' | while read line ; do echo $(echo $line | cut -f 2 | wc -c)$'\t'$line; done | sort -nk1,1 | cut -f 2,3 | tr '[:space:]' '\n'
 ```
 
