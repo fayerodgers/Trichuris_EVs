@@ -7,6 +7,10 @@ kallisto 0.43.1
 
 R version 3.5.0
 
+dustmasker 1.0.0
+
+mkvtree 2.3.0, vmatch 2.3.0 (run from purge-sequence in RSAT)
+
 Sylamer 
 
 Mouse cDNA FASTA file, Ensembl release 97: <ftp://ftp.ensembl.org/pub/release-97/fasta/mus_musculus/cdna/Mus_musculus.GRCm38.cdna.all.fa.gz>
@@ -63,6 +67,32 @@ awk '$2>0{print $1}' deseq2_results.tsv | sed -e 's/"//g' | while read id; do gr
 Sort the file from shortest UTR to longest:
 
 ```
-cat expressed_utrs.fa | sed -e '$!N;s/\n/\t/' | while read line ; do echo $(echo $line | cut -f 2 | wc -c)$'\t'$line; done | sort -nk1,1 | cut -f 2,3 | tr '[:space:]' '\n'
+cat expressed_utrs.fa | sed -e '$!N;s/\n/\t/' | while read line ; do echo $(echo $line | cut -f 2 | wc -c)$'\t'$line; done | sort -nk1,1 | cut -f 2,3 | tr '[:space:]' '\n' > expressed_utrs_sorted.fa
 ```
+
+Dust and purge the UTRs:
+
+```
+dustmasker -in expressed_utrs_sorted.fa -out expressed_utrs_dusted.fa -outfmt fasta
+purge-sequence -i expressed_utrs_dusted.fa  -1str -ml 40 -mis 2 -skip_short 20 -o expressed_utrs_dusted_purged.fa 
+```
+
+Generate a rankfile of Trichuris genes, from most significantly down-regulated to most significantly up-regualated:
+
+```
+tail -n +2 deseq2_results.tsv | sed -e 's/NA/0.99/g' | sed -e 's/"//g'| awk '$2>0 {print $1,$3,-log($6)/log(10)}'| while read -r id change logpval; do if [[ "$change" =~ '-' ]]; then logpval='-'$logpval ; fi ; echo $id$'\t'$logpval ; done | sort -g -k2,2 > rankfile.tsv
+```
+
+Run Sylamer:
+
+```
+sylamer -fasta expressed_utrs_dusted_purged.fa -universe rankfile.tsv -k 6 -m 4 -grow 25 -o out.6mer
+sylamer -fasta expressed_utrs_dusted_purged.fa -universe rankfile.tsv -k 7 -m 4 -grow 25 -o out.7mer
+sylamer -fasta expressed_utrs_dusted_purged.fa -universe rankfile.tsv -k 8 -m 4 -grow 25 -o out.8mer
+
+
+
+
+
+
 
