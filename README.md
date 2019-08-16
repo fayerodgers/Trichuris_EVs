@@ -5,13 +5,13 @@ Scripts for analysis of organoid/EV interactions
 
 kallisto 0.43.1
 
-R version 3.5.0
+R 3.5.0
 
 dustmasker 1.0.0
 
 mkvtree 2.3.0, vmatch 2.3.0 (run from purge-sequence in RSAT)
 
-Sylamer 
+Sylamer 18-131
 
 Mouse cDNA FASTA file, Ensembl release 97: <ftp://ftp.ensembl.org/pub/release-97/fasta/mus_musculus/cdna/Mus_musculus.GRCm38.cdna.all.fa.gz>
 
