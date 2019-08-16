@@ -90,7 +90,7 @@ sylamer -fasta expressed_utrs_dusted_purged.fa -universe rankfile.tsv -k 6 -m 4 
 sylamer -fasta expressed_utrs_dusted_purged.fa -universe rankfile.tsv -k 7 -m 4 -grow 25 -o out.7mer
 sylamer -fasta expressed_utrs_dusted_purged.fa -universe rankfile.tsv -k 8 -m 4 -grow 25 -o out.8mer
 
-
+```
 
 
 
