@@ -70,11 +70,12 @@ Sort the file from shortest UTR to longest:
 cat expressed_utrs.fa | sed -e '$!N;s/\n/\t/' | while read line ; do echo $(echo $line | cut -f 2 | wc -c)$'\t'$line; done | sort -nk1,1 | cut -f 2,3 | tr '[:space:]' '\n' > expressed_utrs_sorted.fa
 ```
 
-Dust and purge the UTRs:
+Dust and purge the UTRs (then hard mask):
 
 ```
 dustmasker -in expressed_utrs_sorted.fa -out expressed_utrs_dusted.fa -outfmt fasta
 purge-sequence -i expressed_utrs_dusted.fa  -1str -ml 40 -mis 2 -skip_short 20 -o expressed_utrs_dusted_purged.fa 
+sed -e 's/[a-z]/N/g' expressed_utrs_dusted_purged.fa > expressed_utrs_hard_masked.fa 
 ```
 
 Generate a rankfile of Trichuris genes, from most significantly down-regulated to most significantly up-regualated:
@@ -83,14 +84,37 @@ Generate a rankfile of Trichuris genes, from most significantly down-regulated t
 tail -n +2 deseq2_results.tsv | sed -e 's/NA/0.99/g' | sed -e 's/"//g'| awk '$2>0 {print $1,$3,-log($6)/log(10)}'| while read -r id change logpval; do if [[ "$change" =~ '-' ]]; then logpval='-'$logpval ; fi ; echo $id$'\t'$logpval ; done | sort -g -k2,2 > rankfile.tsv
 ```
 
+Also generate a rankfile of only the significantly (padj<0.05) downegulated genes:
+
+```
+tail -n +2 deseq2_results.tsv | sed -e 's/"//g'| awk '$3<0 && $7<0.05 {print $1,log($6)/log(10)}'| sort -g -k2,2 > subset.tsv
+```
+
 Run Sylamer:
 
 ```
-sylamer -fasta expressed_utrs_dusted_purged.fa -universe rankfile.tsv -k 6 -m 4 -grow 25 -o out.6mer
-sylamer -fasta expressed_utrs_dusted_purged.fa -universe rankfile.tsv -k 7 -m 4 -grow 25 -o out.7mer
-sylamer -fasta expressed_utrs_dusted_purged.fa -universe rankfile.tsv -k 8 -m 4 -grow 25 -o out.8mer
+sylamer -fasta expressed_utrs_hard_masked.fa -universe rankfile.tsv -k 6 -m 4 -grow 50 -o out.universe.6mer
+sylamer -fasta expressed_utrs_hard_masked.fa -universe rankfile.tsv -k 7 -m 4 -grow 50 -o out.universe.7mer
+sylamer -fasta expressed_utrs_hard_masked.fa -universe rankfile.tsv -k 8 -m 4 -grow 50 -o out.universe.8mer
+
+sylamer -fasta expressed_utrs_hard_masked.fa -subset subset.tsv -k 6 -m 4 -grow 10 -o out.subset.6mer
+sylamer -fasta expressed_utrs_hard_masked.fa -subset subset.tsv -k 7 -m 4 -grow 10 -o out.subset.7mer
+sylamer -fasta expressed_utrs_hard_masked.fa -subset subset.tsv -k 8 -m 4 -grow 10 -o out.subset.8mer
+```
+
+Plot most significant words (eg for k=6):
 
 ```
+ R --vanilla --slave --quiet --args --data=out.universe.6mer --title='Universe.k6' --pdf=6mer.universe.pdf < ~/bio_software/sylamer/wrapperscript/syl.plot.R
+```
+
+Plot selected motifs (eg for k=6):
+```
+R --vanilla --slave --quiet --args --data=out.universe.6mer --add="ACTGGA,ACTCGT,GACCTG,TTCGAG,CCGTTC,GCTTAG,CTGATC,CTCCAT" --top=0 --bottom=0 --title='Universe.k6' --pdf=6mer.universe.selected.pdf < ~/bio_software/sylamer/wrapperscript/syl.plot.R
+[1] "ACTGGA" "ACTCGT" "GACCTG" "TTCGAG" "CCGTTC" "GCTTAG" "CTGATC" "CTCCAT"
+```
+
+
 
 
 
